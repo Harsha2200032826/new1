@@ -1,0 +1,43 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+# Use the desired Python version
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+    addToPath: true
+
+# Install dependencies and test your Python script
+- script: |
+    python --version
+    pip install -r requirements.txt
+    python add1.py
+  displayName: 'Install Dependencies and Run Python Script'
+
+# Run tests (optional step if you have a test suite)
+- script: |
+    python -m unittest discover -s tests
+  displayName: 'Run Unit Tests'
+
+# Build the Python package
+- script: |
+    python setup.py sdist bdist_wheel
+  displayName: 'Build Python Package'
+
+# Publish the package to a PyPI-compatible index (e.g., TestPyPI)
+- script: |
+    pip install twine
+    twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+  env:
+    TWINE_USERNAME: $(PYPI_USERNAME)
+    TWINE_PASSWORD: $(PYPI_PASSWORD)
+  displayName: 'Publish Package to TestPyPI'
